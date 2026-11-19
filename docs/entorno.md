@@ -22,6 +22,16 @@ Supabase CLI y Vercel CLI están instaladas en el proyecto. En PowerShell, puede
 
 El flujo del examen es `hu/HU-XX` → PR a `develop` → PR a `main` en [PC2_PROYECTO_III](https://github.com/raul2505/PC2_PROYECTO_III). El workflow ejecuta CI y seguridad en ambos destinos. Los PR no reciben credenciales de despliegue. En `develop`, el destino de Vercel es Preview. En `main`, es Production.
 
+Para enlazar las herramientas con tus cuentas desde PowerShell, abre una terminal nueva y completa los inicios de sesión en el navegador. Ejecuta `vercel link` después de crear o importar el proyecto en Vercel.
+
+```powershell
+gh auth login --hostname github.com --git-protocol https --scopes workflow
+npx.cmd supabase login
+npx.cmd supabase link --project-ref jdnfncwgrevcfdcdqsud
+npx.cmd vercel login
+npx.cmd vercel link
+```
+
 1. En Supabase, el proyecto de práctica tiene URL `https://jdnfncwgrevcfdcdqsud.supabase.co`. Copia su clave publicable desde el panel. Usa un segundo proyecto de Supabase si activas Preview. Guarda la contraseña de la base en un gestor de contraseñas.
 2. En Vercel, configura un proyecto Next.js con Node.js 24. Añade `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en Preview y Production con los valores del Supabase correspondiente. El archivo `vercel.json` desactiva el despliegue automático por Git. Obtén el identificador de proyecto y de equipo o cuenta en los ajustes de Vercel.
 3. En GitHub, crea los entornos `preview` y `production` en **Settings → Environments**, con las ramas `develop` y `main`, respectivamente. En cada entorno, registra los secretos correspondientes. Si tu plan no ofrece Environments, configura el destino a nivel de repositorio solo para un entorno y ajusta el workflow para operar únicamente en su rama.
