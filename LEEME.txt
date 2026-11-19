@@ -1,0 +1,17 @@
+SKILL DEVSECOPS EXPRESS (Claude Code)
+
+Instalación:
+1. Dentro de tu proyecto, copia esta carpeta a:  .claude/skills/devsecops-express/
+   (debe quedar .claude/skills/devsecops-express/SKILL.md)
+2. Abre Claude Code en la carpeta del proyecto y escribe:  /devsecops-express
+   o simplemente pega el caso y pide "empecemos con el paso 1".
+
+Antes del examen ten listo:
+- Cuenta de Supabase con un proyecto creado (guarda la Database Password).
+- Cuenta de Vercel y la CLI (npm i -g vercel).
+- GitHub CLI (gh) con sesión iniciada.
+- Proyecto Scrum en Jira con Sprint 0, 1 y 2.
+- Un proyecto Next.js base:  npx create-next-app@latest
+  y luego:  npm i @supabase/supabase-js @supabase/ssr zod  y  npm i -D vitest supabase
+
+Recomendación: haz un ensayo corto antes, con un caso inventado, para comprobar que el pipeline sale en verde.

@@ -1,0 +1,125 @@
+name: Pipeline DevSecOps
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  seguridad:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+      - name: Buscar secretos en el historial
+        shell: bash
+        run: |
+          release=https://github.com/gitleaks/gitleaks/releases/download/v8.24.3
+          archive=gitleaks_8.24.3_linux_x64.tar.gz
+          curl -fsSL "$release/$archive" -o "$RUNNER_TEMP/$archive"
+          curl -fsSL "$release/gitleaks_8.24.3_checksums.txt" -o "$RUNNER_TEMP/gitleaks-checksums.txt"
+          (
+            cd "$RUNNER_TEMP"
+            grep -F "$archive" gitleaks-checksums.txt | sha256sum --check --strict -
+            tar -xzf "$archive" gitleaks
+          )
+          "$RUNNER_TEMP/gitleaks" git --redact=100 .
+      - name: Auditar dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
+
+  deploy:
+    needs: seguridad
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' ||
+      (github.ref == 'refs/heads/develop' && vars.DEPLOY_PREVIEW_ENABLED == 'true'))
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+    concurrency:
+      group: deploy-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - name: Preparar build de Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        shell: bash
+        run: |
+          : "${VERCEL_TOKEN:?Configura VERCEL_TOKEN}" "${VERCEL_ORG_ID:?Configura VERCEL_ORG_ID}" "${VERCEL_PROJECT_ID:?Configura VERCEL_PROJECT_ID}"
+          target=preview
+          flags=()
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            target=production
+            flags+=(--prod)
+          fi
+          npx --no-install vercel pull --yes --environment="$target" --token="$VERCEL_TOKEN"
+          npx --no-install vercel build "${flags[@]}" --token="$VERCEL_TOKEN"
+      - name: Aplicar migraciones de Supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        shell: bash
+        run: |
+          if ! compgen -G 'supabase/migrations/*.sql' > /dev/null; then
+            echo 'Este commit no incluye migraciones.'
+            exit 0
+          fi
+          : "${SUPABASE_ACCESS_TOKEN:?Configura SUPABASE_ACCESS_TOKEN}" "${SUPABASE_DB_PASSWORD:?Configura SUPABASE_DB_PASSWORD}" "${SUPABASE_PROJECT_ID:?Configura SUPABASE_PROJECT_ID}"
+          npx --no-install supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          npx --no-install supabase db push --remote --yes --skip-vault
+      - name: Publicar en Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        shell: bash
+        run: |
+          flags=()
+          if [[ "$GITHUB_REF_NAME" == main ]]; then flags+=(--prod); fi
+          npx --no-install vercel deploy --yes --prebuilt "${flags[@]}" --token="$VERCEL_TOKEN"
+      - name: Comprobar el despliegue de producción
+        if: github.ref_name == 'main'
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        shell: bash
+        run: |
+          : "${APP_URL:?Configura el dominio de producción en APP_URL}"
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --max-time 20 "${APP_URL%/}/api/health" |
+            jq -e '.status == "ok"'
