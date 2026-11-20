@@ -40,6 +40,7 @@ button, select { font: inherit; }
 
 .wordmark span { color: var(--trail); }
 .atlas-account, .auth-back { color: var(--trail); font-size: 0.9rem; font-weight: 700; text-underline-offset: 0.2em; }
+.atlas-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem 1rem; }
 
 .auth-panel {
   width: min(100% - 2rem, 28rem);
@@ -80,6 +81,7 @@ button, select { font: inherit; }
 .auth-button:not(:disabled):hover { background: var(--trail); }
 .auth-button:disabled { opacity: 0.65; cursor: wait; }
 .auth-form .auth-error { margin: 0; color: #8e2420; }
+.auth-panel .result-note { margin: 1.2rem 0 0; }
 .coordinate-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
 .auth-secondary { justify-self: start; border: 1px solid var(--line); border-radius: 0.25rem; background: var(--paper); color: var(--trail); padding: 0.5rem 0.75rem; cursor: pointer; }
 .moderation-panel { width: min(100% - 2rem, 42rem); }
