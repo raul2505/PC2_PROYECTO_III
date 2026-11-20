@@ -40,6 +40,7 @@ button, select { font: inherit; }
 
 .wordmark span { color: var(--trail); }
 .atlas-account, .auth-back { color: var(--trail); font-size: 0.9rem; font-weight: 700; text-underline-offset: 0.2em; }
+.atlas-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem 1rem; }
 
 .auth-panel {
   width: min(100% - 2rem, 28rem);
@@ -55,7 +56,7 @@ button, select { font: inherit; }
 .auth-field { display: grid; gap: 0.35rem; }
 .auth-field label { font-weight: 650; }
 
-.auth-field input {
+.auth-field input, .auth-field select, .auth-field textarea {
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid #719184;
@@ -80,6 +81,20 @@ button, select { font: inherit; }
 .auth-button:not(:disabled):hover { background: var(--trail); }
 .auth-button:disabled { opacity: 0.65; cursor: wait; }
 .auth-form .auth-error { margin: 0; color: #8e2420; }
+.auth-panel .result-note { margin: 1.2rem 0 0; }
+.route-result { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 0.8rem; }
+.route-result h2 { margin: 0 0 0.6rem; font-size: 1.15rem; }
+.preview-map { position: relative; isolation: isolate; min-height: 20rem; border: 1px solid var(--line); background: #e4eee8; }
+.parking-pin { display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #173a31; color: #fff; font-weight: 700; }
+.parking-list { margin: 1rem 0 0; padding-left: 1.25rem; line-height: 1.6; }
+.parking-details dt { margin-top: 0.8rem; font-weight: 700; }
+.parking-details dd { margin: 0.2rem 0 0; }
+.coordinate-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.auth-secondary { justify-self: start; border: 1px solid var(--line); border-radius: 0.25rem; background: var(--paper); color: var(--trail); padding: 0.5rem 0.75rem; cursor: pointer; }
+.moderation-panel { width: min(100% - 2rem, 42rem); }
+.review-item { border-top: 1px solid var(--line); padding: 1rem 0; }
+.review-item h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.review-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .atlas-content {
   display: grid;
@@ -183,6 +198,10 @@ button, select { font: inherit; }
 .legend-line { margin-top: 0.65rem; border-top: 3px dashed var(--lime); }
 .map-legend strong { font-size: 0.9rem; }
 .map-legend p { margin-top: 0.35rem; font-size: 0.85rem; }
+.risk-alert-summary { display: grid; grid-template-columns: 1.3rem 1fr; gap: 0.75rem; }
+.risk-alert-summary strong { font-size: 0.9rem; }
+.risk-alert-summary p { margin-top: 0.35rem; font-size: 0.85rem; }
+.risk-alert-pin { display: block; width: 1rem; height: 1rem; border-radius: 50%; background: #a12727; border: 2px solid #fff; box-shadow: 0 0 0 1px #792626; }
 
 .map-frame { min-width: 0; border: 1px solid var(--line); background: #fff; }
 
