@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { readRouteSelection, routePoints } from "./route-data";
+import { MapPreview } from "../components/map-preview";
+import { findDemoRoute, readRouteSelection, routePoints } from "./route-data";
 
 export const metadata = { title: "Recorridos ciclistas" };
 
@@ -8,6 +9,7 @@ type Query = { origen?: string | string[]; destino?: string | string[] };
 export default async function RoutesPage({ searchParams }: { searchParams: Promise<Query> }) {
   const { origen, destino } = await searchParams;
   const selection = readRouteSelection(origen, destino);
+  const route = findDemoRoute(selection);
 
   return (
     <main className="auth-panel moderation-panel">
@@ -32,7 +34,15 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
         <button className="auth-button" type="submit">Consultar recorrido</button>
       </form>
       {selection.requested && !selection.valid && <p className="result-note" role="alert">Selecciona un origen y un destino disponibles y diferentes.</p>}
-      {selection.valid && <p className="result-note" role="status">Selección de origen y destino válida.</p>}
+      {selection.valid && !route && <p className="result-note" role="status">No hay un recorrido disponible entre esos puntos.</p>}
+      {route && (
+        <section className="route-result" aria-labelledby="route-result-heading">
+          <h2 id="route-result-heading">Recorrido sugerido · {route.name}</h2>
+          <p>{route.from} → {route.to}</p>
+          <p>Geometría de demostración. No la uses para planificar un viaje.</p>
+          <MapPreview key={`${origen}-${destino}`} path={route.path} label="Mapa del recorrido sugerido" />
+        </section>
+      )}
     </main>
   );
 }
