@@ -13,7 +13,10 @@ export default async function MapPage() {
     <div className="atlas">
       <header className="atlas-header">
         <span className="wordmark">Bici<span>Lima</span></span>
-        <Link className="atlas-account" href="/cuenta" prefetch={false}>Mi cuenta</Link>
+        <nav className="atlas-nav" aria-label="Navegación principal">
+          <Link className="atlas-account" href="/rutas">Recorridos</Link>
+          <Link className="atlas-account" href="/cuenta" prefetch={false}>Mi cuenta</Link>
+        </nav>
       </header>
 
       <main>
