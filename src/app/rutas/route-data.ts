@@ -14,3 +14,15 @@ export function readRouteSelection(origin: QueryValue, destination: QueryValue) 
 
   return { from, to, requested, valid: !!from && !!to && from.id !== to.id };
 }
+
+export function findDemoRoute(selection: ReturnType<typeof readRouteSelection>) {
+  const { from, to, valid } = selection;
+  if (!valid || !from || !to || from.laneId !== to.laneId) return null;
+
+  const lane = demoLanes.find((item) => item.id === from.laneId);
+  if (!lane) return null;
+
+  const path = lane.path.slice(Math.min(from.index, to.index), Math.max(from.index, to.index) + 1);
+  if (from.index > to.index) path.reverse();
+  return { name: lane.name, from: from.label, to: to.label, path };
+}
