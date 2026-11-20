@@ -9,6 +9,12 @@ export type CycleLane = {
   path: Coordinates[];
 };
 
+export const demoDistricts = ["Cercado de Lima", "Miraflores", "Pueblo Libre", "San Isidro"];
+
+export function filterLanesByDistrict(lanes: readonly CycleLane[], district: string) {
+  return district === "" ? lanes : lanes.filter((lane) => lane.district === district);
+}
+
 // Geometrías ficticias para probar el mapa. No representan infraestructura vial.
 export const demoLanes: CycleLane[] = [
   {
