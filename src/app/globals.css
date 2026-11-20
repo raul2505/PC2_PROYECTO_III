@@ -13,7 +13,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; }
-button { font: inherit; }
+button, select { font: inherit; }
 :focus-visible { outline: 3px solid #287ca2; outline-offset: 3px; }
 
 .atlas {
@@ -51,8 +51,7 @@ button { font: inherit; }
 .map-guide {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: clamp(2rem, 5vw, 4.5rem);
+  gap: 1.5rem;
   padding: clamp(1.25rem, 2.5vw, 2.5rem);
   background: var(--forest);
   color: white;
@@ -72,11 +71,71 @@ button { font: inherit; }
 
 .map-guide p { max-width: 25ch; margin: 1.1rem 0 0; line-height: 1.55; color: #ebf3e6; }
 
+.district-filter { display: grid; gap: 0.45rem; }
+.district-filter label { font-size: 0.85rem; font-weight: 700; }
+
+.district-filter select, .district-reset {
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #719184;
+  border-radius: 0.25rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.district-reset { align-self: start; }
+.district-reset:hover { background: var(--lime); }
+.district-filter select:focus-visible, .district-reset:focus-visible { outline-color: var(--lime); }
+
+.lane-browser h2 { margin: 0 0 0.6rem; font-size: 0.95rem; }
+
+.lane-list {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.lane-list button {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #719184;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.lane-list button:hover { background: #285043; }
+.lane-list button[aria-pressed="true"] { border-color: var(--lime); background: var(--lime); color: var(--ink); }
+.lane-list button:focus-visible { outline-color: var(--lime); }
+
+.lane-details {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-left: 3px solid var(--lime);
+  background: #23463b;
+}
+
+.lane-details h3 { margin: 0; font-size: 1rem; }
+.lane-details dl { margin: 0; }
+.lane-details dt { margin-top: 0.65rem; color: var(--lime); font-size: 0.75rem; font-weight: 700; }
+.lane-details dd { margin: 0.15rem 0 0; color: #ebf3e6; font-size: 0.85rem; line-height: 1.4; }
+
 .map-legend {
   display: grid;
   grid-template-columns: 1.3rem minmax(0, 1fr);
   align-items: start;
   gap: 0.75rem;
+  margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid #719184;
 }
@@ -147,5 +206,6 @@ button { font: inherit; }
   .map-guide { gap: 1.25rem; }
   .map-guide h1 span { display: inline; }
   .map-guide p { max-width: 40ch; }
+  .lane-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .map-stage { min-height: 26rem; }
 }
