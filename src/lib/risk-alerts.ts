@@ -10,3 +10,9 @@ export const riskAlertSchema = z.object({
 
 export type RiskAlert = z.infer<typeof riskAlertSchema>;
 export type PublicAlerts = { available: boolean; items: RiskAlert[] };
+
+const alertDate = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeZone: "America/Lima" });
+
+export function formatAlertDate(value: string) {
+  return alertDate.format(new Date(value));
+}
