@@ -1,10 +1,151 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+  --paper: #f6f5ed;
+  --ink: #192d26;
+  --forest: #173a31;
+  --lime: #d9ee83;
+  --line: #cbcfc2;
+  --trail: #13634c;
   font-family: system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
 }
 
-main {
-  max-width: 42rem;
-  margin: 12vh auto;
-  padding: 1.5rem;
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+button { font: inherit; }
+:focus-visible { outline: 3px solid #287ca2; outline-offset: 3px; }
+
+.atlas {
+  max-width: 100rem;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 4rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.atlas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.wordmark {
+  font-family: Bahnschrift, "Arial Narrow", system-ui, sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.07em;
+}
+
+.wordmark span { color: var(--trail); }
+.city-label { color: #4d6056; font-size: 0.85rem; }
+
+.atlas-content {
+  display: grid;
+  grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: clamp(1rem, 3vw, 2.5rem);
+}
+
+.map-guide {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.25rem, 2.5vw, 2.5rem);
+  background: var(--forest);
+  color: white;
+}
+
+.map-guide h1 {
+  margin: 0;
+  color: var(--lime);
+  font-family: Bahnschrift, "Arial Narrow", system-ui, sans-serif;
+  font-size: clamp(2.5rem, 4.5vw, 4.2rem);
+  font-weight: 730;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.map-guide h1 span { display: block; }
+
+.map-guide p { max-width: 25ch; margin: 1.1rem 0 0; line-height: 1.55; color: #ebf3e6; }
+
+.map-legend {
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #719184;
+}
+
+.legend-line { margin-top: 0.65rem; border-top: 3px dashed var(--lime); }
+.map-legend strong { font-size: 0.9rem; }
+.map-legend p { margin-top: 0.35rem; font-size: 0.85rem; }
+
+.map-frame { min-width: 0; border: 1px solid var(--line); background: #fff; }
+
+.map-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.4rem;
+  padding: 0.5rem 0.8rem 0.5rem 1rem;
+}
+
+.map-toolbar p { margin: 0; font-size: 0.9rem; font-weight: 650; }
+
+.map-toolbar button, .map-notice button {
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.map-toolbar button:disabled { cursor: default; opacity: 0.55; }
+.map-toolbar button:not(:disabled):hover, .map-notice button:hover { background: var(--lime); }
+
+.map-stage {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(31rem, 68vh, 52rem);
+  border-top: 1px solid var(--line);
+  background: #e4eee8;
+}
+
+.leaflet-surface { position: absolute; inset: 0; background: #e4eee8; }
+.leaflet-surface:focus-visible { outline-offset: -3px; z-index: 1; }
+.leaflet-surface .leaflet-bar a { color: var(--forest); }
+.leaflet-surface .leaflet-control-attribution { font-size: 0.7rem; }
+
+.map-notice {
+  position: absolute;
+  z-index: 1001;
+  top: 0.9rem;
+  left: 0.9rem;
+  max-width: min(25rem, calc(100% - 1.8rem));
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  background: white;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.map-notice p { margin: 0 0 0.5rem; }
+
+@media (max-width: 48rem) {
+  .atlas-header { min-height: 3.8rem; }
+  .atlas-content { grid-template-columns: minmax(0, 1fr); }
+  .map-guide { gap: 1.25rem; }
+  .map-guide h1 span { display: inline; }
+  .map-guide p { max-width: 40ch; }
+  .map-stage { min-height: 26rem; }
 }
