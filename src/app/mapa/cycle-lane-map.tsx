@@ -1,22 +1,28 @@
 "use client";
 
-import type { Map as LeafletMap, Polyline } from "leaflet";
-import { useEffect, useRef, useState } from "react";
-import type { CycleLane } from "./demo-lanes";
+import type { FeatureGroup, Map as LeafletMap, Polyline } from "leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { filterLanesByDistrict, type CycleLane } from "./demo-lanes";
 import { LaneDetails } from "./lane-details";
 
 type Status = "loading" | "ready" | "error";
 
-export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
+export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]; districts: readonly string[] }) {
   const container = useRef<HTMLDivElement>(null);
+  const districtSelect = useRef<HTMLSelectElement>(null);
   const detailPanel = useRef<HTMLDivElement>(null);
   const paths = useRef(new Map<string, Polyline>());
+  const mapLayers = useRef<FeatureGroup | null>(null);
   const resetView = useRef<(() => void) | null>(null);
   const [status, setStatus] = useState<Status>("loading");
   const [baseUnavailable, setBaseUnavailable] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [district, setDistrict] = useState("");
   const [selectedId, setSelectedId] = useState<string>();
-  const selectedLane = lanes.find(({ id }) => id === selectedId);
+  const visibleLanes = useMemo(() => filterLanesByDistrict(lanes, district), [lanes, district]);
+  const selectedLane = visibleLanes.find(({ id }) => id === selectedId);
+  const resultCount = visibleLanes.length;
+  const emptyMessage = district ? `No hay ciclovías de muestra en ${district}.` : "No hay ciclovías para mostrar";
 
   useEffect(() => {
     if (!container.current) return;
@@ -55,6 +61,7 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
         lanePaths.set(id, line);
         return line;
       })).addTo(view);
+      mapLayers.current = lines;
 
       resetView.current = () => {
         const bounds = lines.getBounds();
@@ -83,6 +90,7 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
       map?.remove();
       map = undefined;
       lanePaths.clear();
+      mapLayers.current = null;
       resetView.current = null;
       setStatus("error");
     });
@@ -91,17 +99,32 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
       active = false;
       map?.remove();
       lanePaths.clear();
+      mapLayers.current = null;
       resetView.current = null;
     };
   }, [attempt, lanes]);
 
   useEffect(() => {
+    const group = mapLayers.current;
+    if (!group) return;
+
+    const visibleIds = new Set(visibleLanes.map(({ id }) => id));
+    let layersChanged = false;
+
     for (const [id, line] of paths.current) {
+      const visible = visibleIds.has(id);
+      if (group.hasLayer(line) !== visible) {
+        if (visible) group.addLayer(line);
+        else group.removeLayer(line);
+        layersChanged = true;
+      }
+      if (!visible) continue;
       const selected = id === selectedId;
       line.setStyle({ color: selected ? "#173a31" : "#13634c", weight: selected ? 8 : 5 });
       if (selected) line.bringToFront();
     }
-  }, [selectedId, status]);
+    if (layersChanged && visibleLanes.length > 0) resetView.current?.();
+  }, [selectedId, status, visibleLanes]);
 
   useEffect(() => {
     if (selectedId && window.matchMedia("(max-width: 48rem)").matches) {
@@ -115,6 +138,11 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
     setAttempt((previous) => previous + 1);
   }
 
+  function changeDistrict(nextDistrict: string) {
+    setDistrict(nextDistrict);
+    if (nextDistrict && selectedLane?.district !== nextDistrict) setSelectedId(undefined);
+  }
+
   return (
     <div className="atlas-content">
       <aside className="map-guide" aria-labelledby="map-heading">
@@ -123,11 +151,19 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
           <p>Selecciona un trazado en el mapa o en la lista para consultar su ficha.</p>
         </div>
 
-        {lanes.length > 0 && (
+        <div className="district-filter">
+          <label htmlFor="cycle-lane-district">Distrito</label>
+          <select ref={districtSelect} id="cycle-lane-district" value={district} onChange={(event) => changeDistrict(event.target.value)}>
+            <option value="">Todos los distritos</option>
+            {districts.map((option) => <option key={option} value={option}>{option}</option>)}
+          </select>
+        </div>
+
+        {resultCount > 0 && (
           <section className="lane-browser" aria-labelledby="lane-list-heading">
             <h2 id="lane-list-heading">Tramos</h2>
             <ul className="lane-list">
-              {lanes.map((lane) => (
+              {visibleLanes.map((lane) => (
                 <li key={lane.id}>
                   <button type="button" aria-pressed={selectedId === lane.id} onClick={() => setSelectedId(lane.id)}>
                     {lane.name}
@@ -141,6 +177,15 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
           </section>
         )}
 
+        {district && resultCount === 0 && (
+          <button type="button" className="district-reset" onClick={() => {
+            changeDistrict("");
+            districtSelect.current?.focus();
+          }}>
+            Ver todos los distritos
+          </button>
+        )}
+
         <div className="map-legend">
           <span className="legend-line" aria-hidden="true" />
           <div>
@@ -152,7 +197,7 @@ export function CycleLaneMap({ lanes }: { lanes: readonly CycleLane[] }) {
 
       <section className="map-frame" aria-label="Mapa interactivo de Lima" aria-describedby="map-scope">
         <div className="map-toolbar">
-          <p role="status">{lanes.length === 0 ? "No hay ciclovías para mostrar" : `${lanes.length} ${lanes.length === 1 ? "trazado" : "trazados"} de muestra`}</p>
+          <p role="status">{resultCount === 0 ? emptyMessage : `${resultCount} ${resultCount === 1 ? "trazado" : "trazados"} de muestra`}</p>
           <button type="button" disabled={status !== "ready"} onClick={() => resetView.current?.()}>
             Vista inicial
           </button>

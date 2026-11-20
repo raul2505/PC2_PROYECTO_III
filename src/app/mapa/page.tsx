@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CycleLaneMap } from "./cycle-lane-map";
-import { demoLanes } from "./demo-lanes";
+import { demoDistricts, demoLanes } from "./demo-lanes";
 
 export const metadata: Metadata = { title: "Mapa de ciclovías" };
 
@@ -13,7 +13,7 @@ export default function MapPage() {
       </header>
 
       <main>
-        <CycleLaneMap lanes={demoLanes} />
+        <CycleLaneMap lanes={demoLanes} districts={demoDistricts} />
       </main>
     </div>
   );
