@@ -2,12 +2,16 @@
 
 import type { FeatureGroup, Map as LeafletMap, Polyline } from "leaflet";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PublicAlerts } from "../../lib/risk-alerts";
+import { riskTypes } from "../reportes/nuevo/fields";
 import { filterLanesByDistrict, type CycleLane } from "./demo-lanes";
 import { LaneDetails } from "./lane-details";
 
 type Status = "loading" | "ready" | "error";
+const emptyAlerts: PublicAlerts = { available: false, items: [] };
+const alertDate = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeZone: "America/Lima" });
 
-export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]; districts: readonly string[] }) {
+export function CycleLaneMap({ lanes, districts, alerts = emptyAlerts }: { lanes: readonly CycleLane[]; districts: readonly string[]; alerts?: PublicAlerts }) {
   const container = useRef<HTMLDivElement>(null);
   const districtSelect = useRef<HTMLSelectElement>(null);
   const detailPanel = useRef<HTMLDivElement>(null);
@@ -65,8 +69,21 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
       })).addTo(view);
       mapLayers.current = lines;
 
+      const alertIcon = leaflet.divIcon({ className: "risk-alert-pin", iconSize: [22, 22] });
+      const alertLayer = leaflet.featureGroup(alerts.items.map((alert) => {
+        const title = riskTypes[alert.type];
+        const info = document.createElement("div");
+        const heading = document.createElement("strong");
+        heading.textContent = title;
+        const detail = document.createElement("p");
+        detail.textContent = `Ubicación aproximada · ${alertDate.format(new Date(alert.created_at))}`;
+        info.append(heading, detail);
+        return leaflet.marker([alert.latitude, alert.longitude], { icon: alertIcon, title }).bindPopup(info);
+      })).addTo(view);
+
       resetView.current = () => {
         const bounds = lines.getBounds();
+        if (lines.getLayers().length === lanes.length) bounds.extend(alertLayer.getBounds());
         if (bounds.isValid()) {
           view.fitBounds(bounds, { maxZoom: 13, padding: [38, 38], animate: false });
         } else {
@@ -113,7 +130,7 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
       mapLayers.current = null;
       resetView.current = null;
     };
-  }, [attempt, lanes]);
+  }, [alerts, attempt, lanes]);
 
   useEffect(() => {
     const group = mapLayers.current;
@@ -203,6 +220,10 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
             <strong>Trazados de demostración</strong>
             <p id="map-scope">Geometrías y fichas ficticias. No las uses para planificar un viaje.</p>
           </div>
+        </div>
+        <div className="risk-alert-summary">
+          <span className="risk-alert-pin" aria-hidden="true" />
+          <div><strong>Alertas publicadas</strong><p>{alerts.available ? (alerts.items.length ? `${alerts.items.length} en el mapa · ubicación aproximada` : "Sin alertas registradas.") : "Alertas no disponibles."}</p></div>
         </div>
       </aside>
 
