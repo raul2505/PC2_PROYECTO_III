@@ -25,8 +25,10 @@ export default async function ParkingPage({ searchParams }: { searchParams: Prom
       {!valid && <p className="result-note" role="alert">Selecciona un distrito disponible.</p>}
       {valid && items.length > 0 ? (
         <>
-          <div className="route-result"><MapPreview key={district || "all"} label="Mapa de estacionamientos de muestra" pins={items.map(({ position, name }) => ({ position, label: name }))} /></div>
-          <ul className="parking-list">{items.map((parking) => <li key={parking.id}>{parking.name} · {parking.district}</li>)}</ul>
+          <div className="route-result"><MapPreview key={district || "all"} label="Mapa de estacionamientos de muestra" pins={items.map(({ id, position, name }) => ({ position, label: name, detailHref: `/estacionamientos/${id}` }))} /></div>
+          <ul className="parking-list">
+            {items.map((parking) => <li key={parking.id}><Link className="auth-back" href={`/estacionamientos/${parking.id}`}>{parking.name}</Link> · {parking.district}</li>)}
+          </ul>
         </>
       ) : valid && <p className="result-note" role="status">No hay estacionamientos de muestra {district ? `en ${district}` : "registrados"}.</p>}
       {district && <p className="result-note"><Link className="auth-back" href="/estacionamientos">Ver todos los distritos</Link></p>}

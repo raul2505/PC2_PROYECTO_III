@@ -4,7 +4,7 @@ import type { Map as LeafletMap } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
 export type Coordinates = [latitude: number, longitude: number];
-export type MapPin = { position: Coordinates; label: string };
+export type MapPin = { position: Coordinates; label: string; detailHref?: string };
 const emptyPins: MapPin[] = [];
 
 export function MapPreview({ path, pins = emptyPins, label }: { path?: Coordinates[]; pins?: MapPin[]; label: string }) {
@@ -36,9 +36,15 @@ export function MapPreview({ path, pins = emptyPins, label }: { path?: Coordinat
 
       const pinIcon = leaflet.divIcon({ className: "parking-pin", html: "P", iconSize: [26, 26] });
       for (const pin of pins) {
-        const description = document.createElement("span");
-        description.textContent = pin.label;
-        leaflet.marker(pin.position, { icon: pinIcon, title: pin.label }).addTo(view).bindPopup(description);
+        const popup = document.createElement("div");
+        popup.textContent = pin.label;
+        if (pin.detailHref) {
+          const details = document.createElement("a");
+          details.href = pin.detailHref;
+          details.textContent = "Ver ficha";
+          popup.append(document.createElement("br"), details);
+        }
+        leaflet.marker(pin.position, { icon: pinIcon, title: pin.label }).addTo(view).bindPopup(popup);
         bounds.extend(pin.position);
       }
       if (bounds.isValid()) view.fitBounds(bounds, { padding: [30, 30], maxZoom: 14, animate: false });
