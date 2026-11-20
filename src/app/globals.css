@@ -39,7 +39,47 @@ button, select { font: inherit; }
 }
 
 .wordmark span { color: var(--trail); }
-.city-label { color: #4d6056; font-size: 0.85rem; }
+.atlas-account, .auth-back { color: var(--trail); font-size: 0.9rem; font-weight: 700; text-underline-offset: 0.2em; }
+
+.auth-panel {
+  width: min(100% - 2rem, 28rem);
+  margin: clamp(2rem, 10vh, 7rem) auto;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.auth-panel h1 { margin: 1.25rem 0 1rem; color: var(--forest); font-size: clamp(1.7rem, 5vw, 2.2rem); }
+.auth-panel p { margin: 0 0 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.auth-form { display: grid; gap: 0.9rem; }
+.auth-field { display: grid; gap: 0.35rem; }
+.auth-field label { font-weight: 650; }
+
+.auth-field input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid #719184;
+  border-radius: 0.25rem;
+  padding: 0.45rem 0.65rem;
+  color: var(--ink);
+  font: inherit;
+}
+
+.auth-button {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--forest);
+  border-radius: 0.25rem;
+  background: var(--forest);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-button:not(:disabled):hover { background: var(--trail); }
+.auth-button:disabled { opacity: 0.65; cursor: wait; }
+.auth-form .auth-error { margin: 0; color: #8e2420; }
 
 .atlas-content {
   display: grid;
