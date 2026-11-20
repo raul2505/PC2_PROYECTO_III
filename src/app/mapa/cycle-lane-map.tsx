@@ -31,6 +31,7 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
     const lanePaths = paths.current;
     let active = true;
     let map: LeafletMap | undefined;
+    let resizeObserver: ResizeObserver | undefined;
 
     void import("leaflet").then((leaflet) => {
       if (!active) return;
@@ -39,6 +40,7 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
       const view = leaflet.map(element, {
         renderer: leaflet.canvas({ tolerance: 8 }),
         scrollWheelZoom: false,
+        trackResize: false,
         zoomControl: false,
         zoomAnimation: !reduceMotion,
         fadeAnimation: !reduceMotion,
@@ -84,9 +86,17 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
         if (active) setBaseUnavailable(!hasTile);
       });
       base.addTo(view);
+
+      resizeObserver = new ResizeObserver(() => {
+        if (active && element.clientWidth > 0 && element.clientHeight > 0) {
+          view.invalidateSize({ animate: false, debounceMoveend: true });
+        }
+      });
+      resizeObserver.observe(element);
       setStatus("ready");
     }).catch(() => {
       if (!active) return;
+      resizeObserver?.disconnect();
       map?.remove();
       map = undefined;
       lanePaths.clear();
@@ -97,6 +107,7 @@ export function CycleLaneMap({ lanes, districts }: { lanes: readonly CycleLane[]
 
     return () => {
       active = false;
+      resizeObserver?.disconnect();
       map?.remove();
       lanePaths.clear();
       mapLayers.current = null;
