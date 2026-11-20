@@ -2,14 +2,13 @@
 
 import type { FeatureGroup, Map as LeafletMap, Polyline } from "leaflet";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { PublicAlerts } from "../../lib/risk-alerts";
+import { formatAlertDate, type PublicAlerts } from "../../lib/risk-alerts";
 import { riskTypes } from "../reportes/nuevo/fields";
 import { filterLanesByDistrict, type CycleLane } from "./demo-lanes";
 import { LaneDetails } from "./lane-details";
 
 type Status = "loading" | "ready" | "error";
 const emptyAlerts: PublicAlerts = { available: false, items: [] };
-const alertDate = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeZone: "America/Lima" });
 
 export function CycleLaneMap({ lanes, districts, alerts = emptyAlerts }: { lanes: readonly CycleLane[]; districts: readonly string[]; alerts?: PublicAlerts }) {
   const container = useRef<HTMLDivElement>(null);
@@ -76,7 +75,7 @@ export function CycleLaneMap({ lanes, districts, alerts = emptyAlerts }: { lanes
         const heading = document.createElement("strong");
         heading.textContent = title;
         const detail = document.createElement("p");
-        detail.textContent = `Ubicación aproximada · ${alertDate.format(new Date(alert.created_at))}`;
+        detail.textContent = `Ubicación aproximada · ${formatAlertDate(alert.created_at)}`;
         info.append(heading, detail);
         return leaflet.marker([alert.latitude, alert.longitude], { icon: alertIcon, title }).bindPopup(info);
       })).addTo(view);

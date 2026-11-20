@@ -1,5 +1,9 @@
 import Link from "next/link";
+import { formatAlertDate } from "../../lib/risk-alerts";
+import { listPublicAlerts } from "../../lib/supabase/public-alerts";
 import { MapPreview } from "../components/map-preview";
+import { riskTypes } from "../reportes/nuevo/fields";
+import { alertDistanceMeters, alertsNearRoute } from "./route-alerts";
 import { findDemoRoute, readRouteSelection, routePoints } from "./route-data";
 
 export const metadata = { title: "Recorridos ciclistas" };
@@ -10,6 +14,8 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
   const { origen, destino } = await searchParams;
   const selection = readRouteSelection(origen, destino);
   const route = findDemoRoute(selection);
+  const feed = route ? await listPublicAlerts() : null;
+  const warnings = route && feed ? alertsNearRoute(feed.items, route.path) : [];
 
   return (
     <main className="auth-panel moderation-panel">
@@ -41,6 +47,17 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
           <p>{route.from} → {route.to}</p>
           <p>Geometría de demostración. No la uses para planificar un viaje.</p>
           <MapPreview key={`${origen}-${destino}`} path={route.path} label="Mapa del recorrido sugerido" />
+          <section className="route-result" aria-labelledby="route-alert-heading">
+            <h2 id="route-alert-heading">Advertencias del recorrido</h2>
+            {!feed?.available && <p role="status">Alertas no disponibles para este recorrido.</p>}
+            {feed?.available && warnings.length === 0 && <p role="status">Sin alertas registradas cerca del recorrido.</p>}
+            {warnings.length > 0 && (
+              <>
+                <p>Ubicaciones aproximadas a {alertDistanceMeters} m o menos del trazado.</p>
+                <ul>{warnings.map((alert) => <li key={alert.id}>{riskTypes[alert.type]} · {formatAlertDate(alert.created_at)}</li>)}</ul>
+              </>
+            )}
+          </section>
         </section>
       )}
     </main>
