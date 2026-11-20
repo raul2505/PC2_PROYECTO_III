@@ -15,6 +15,7 @@ export default async function MapPage() {
         <span className="wordmark">Bici<span>Lima</span></span>
         <nav className="atlas-nav" aria-label="Navegación principal">
           <Link className="atlas-account" href="/rutas">Recorridos</Link>
+          <Link className="atlas-account" href="/estacionamientos">Estacionamientos</Link>
           <Link className="atlas-account" href="/cuenta" prefetch={false}>Mi cuenta</Link>
         </nav>
       </header>
